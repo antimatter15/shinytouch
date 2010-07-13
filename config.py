@@ -3,7 +3,7 @@ width = 640
 height = 480
 
 # Camera Index (usually 0)
-camnum=1
+camnum=0
 
 # Name of the HighGUI window
 window_name = "ShinyTouch"
