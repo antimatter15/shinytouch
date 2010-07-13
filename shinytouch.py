@@ -50,7 +50,7 @@ mode=0 # Normal Mode
 cvCreateTrackbar("Mode", window_name, 0, 4, change_mode);
 
 # Create Motion threshold slider
-motion_threshold=120
+motion_threshold=135
 cvCreateTrackbar("Threshold", window_name, motion_threshold, 255, change_threshold);
 
 running=True

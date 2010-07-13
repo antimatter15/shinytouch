@@ -2,6 +2,46 @@ import opencv
 import Image
 import ImageDraw
 
+def fdivide(a,b):
+  if b == 0:
+    return 1.0
+  return float(a)/float(b)
+
+
+def colorDiffGrade(c,d):
+  r = c[0]-d[0]
+  g = c[1]-d[1]
+  b = c[2]-d[2]
+  return abs(r) + abs(g) + abs(b)
+
+  
+def colorDiffAverage(c,d):
+  r = c[0]-d[0]
+  g = c[1]-d[1]
+  b = c[2]-d[2]
+  return (r + g + b)/3.0
+  
+  
+def colorTestRGB(frame, pix, x, y):
+  try:
+    c = pix[x+10,y] #reflection
+    d = pix[x+10,y-15] #background
+    t = pix[x-5,y] #color of the finger
+    
+    irIM = fdivide(c[0]-d[0],t[0]-d[0])
+    igIM = fdivide(c[1]-d[1],t[1]-d[1])
+    ibIM = fdivide(c[2]-d[2],t[2]-d[2])
+    
+    print irIM+igIM+ibIM
+    if irIM+igIM+ibIM < 10:
+      return True
+    
+    return False
+  except IndexError:
+    return False
+
+
+
 #based on http://mail.python.org/pipermail/image-sig/2005-September/003559.html
 #inspired by http://play.blog2t.net/fast-blob-detection/
 def get_blobs(im, skip = 0):
@@ -48,12 +88,14 @@ class Tracker:
         bitimage=cvCreateImage(cvSize(frame.width, frame.height), frame.depth, 1)
         smoothgray = cvCreateImage(cvSize(frame.width, frame.height), frame.depth, 1)
         
-        cvSmooth(gray, smoothgray, CV_BLUR, 3, 3);
+        cvSmooth(gray, smoothgray, CV_BLUR, 6, 6);
         
         cvThreshold(smoothgray, bitimage, motion_threshold, 255, CV_THRESH_BINARY)
 
         #convert Ipl image to PIL image
         im = opencv.adaptors.Ipl2PIL(bitimage)
+        colorim = opencv.adaptors.Ipl2PIL(frame)
+        bigpix = colorim.load()
         
         tinyim = im.convert("1").resize((im.size[0]/2,im.size[1]/2))
         #draw = ImageDraw.Draw(im)
@@ -62,7 +104,10 @@ class Tracker:
         for blob in get_blobs(tinyim, 5):
           point1 = cvPoint(blob[0]*2, blob[1]*2)
           point2 = cvPoint(blob[2]*2, blob[3]*2)
-          cvRectangle(frame, point1, point2, cvScalar(0,255,255))
+          if colorTestRGB(frame, bigpix, blob[0]*2, blob[1]+blob[3]) is True:
+            cvRectangle(frame, point1, point2, cvScalar(0,0,255))
+          else:
+            cvRectangle(frame, point1, point2, cvScalar(0,255,255))
           
         return frame
 
