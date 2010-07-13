@@ -1,10 +1,4 @@
-
-
 import Image, ImageDraw
-
-
-
-
 
 #based on http://mail.python.org/pipermail/image-sig/2005-September/003559.html
 #inspired by http://play.blog2t.net/fast-blob-detection/
@@ -40,7 +34,7 @@ def get_blobs(im, skip = 0):
   return blobs
 
 
-newim = Image.open('blobdetect.png')
+newim = Image.open('Selection_011.png')
 im = newim.convert("1")
 draw = ImageDraw.Draw(newim)
 import time
@@ -53,4 +47,4 @@ for blob in blobs:
   draw.rectangle((blob[0], blob[1], blob[0]+blob[2], blob[1]+blob[3]), outline=128)
 
 
-newim.save('blobout.png','png')
+newim.save('blobout2.png','png')

@@ -1,60 +1,68 @@
 import opencv
 import Image
+import ImageDraw
+
+#based on http://mail.python.org/pipermail/image-sig/2005-September/003559.html
+#inspired by http://play.blog2t.net/fast-blob-detection/
+def get_blobs(im, skip = 0):
+  pix = im.load()
+  width, height = im.size
+  blobs = []
+  def within(x, y):
+    return x > 0 and y > 0 and x < width and y < height
+
+  for px in range(0, width, skip+1):
+    for py in range(0, height, skip+1):
+      if pix[px, py] != 0:
+        edge = [(px, py)]
+        pix[px, py] = 0
+        minx, maxx, miny, maxy = 99999, 0, 99999, 0
+        while edge:
+          newedge = []
+          for (x, y) in edge:
+            for (s, t) in ((x+1, y), (x-1, y), (x, y+1), (x, y-1)):
+              if within(s, t) and pix[s, t] != 0:
+                pix[s, t] = 0
+                minx = min(s, minx)
+                maxx = max(s, maxx)
+                miny = min(t, miny)
+                maxy = max(t, maxy)
+                newedge.append((s, t))
+          edge = newedge
+        blobs.append((minx, miny, maxx, maxy))
+  return blobs
+
+
 
 class Tracker:
     def __init__(self):
         pass
     
     def filter_motion(self, frame, lastframe):
-				global motion_threshold
-				
-				
-				gray = cvCreateImage(cvSize(frame.width, frame.height), frame.depth, 1)
-				cvCvtColor(frame, gray, CV_RGB2GRAY );
-				
-				bitimage=cvCreateImage(cvSize(frame.width, frame.height), frame.depth, 1)
-				smoothgray = cvCreateImage(cvSize(frame.width, frame.height), frame.depth, 1)
-				
-				cvSmooth(gray, smoothgray, CV_BLUR, 3, 3);
-				
-				cvThreshold(smoothgray, bitimage, motion_threshold, 255, CV_THRESH_BINARY)
+        global motion_threshold
+        
+        
+        gray = cvCreateImage(cvSize(frame.width, frame.height), frame.depth, 1)
+        cvCvtColor(frame, gray, CV_RGB2GRAY );
+        
+        bitimage=cvCreateImage(cvSize(frame.width, frame.height), frame.depth, 1)
+        smoothgray = cvCreateImage(cvSize(frame.width, frame.height), frame.depth, 1)
+        
+        cvSmooth(gray, smoothgray, CV_BLUR, 3, 3);
+        
+        cvThreshold(smoothgray, bitimage, motion_threshold, 255, CV_THRESH_BINARY)
 
-				#convert Ipl image to PIL image
-				im = opencv.adaptors.Ipl2PIL(bitimage)
-				pix = im.load()
-				
-				#TODO: a blob detector (OpenCV? make it work with PYTHON)
-				
-				
-				
-				return opencv.adaptors.PIL2Ipl(im)
-
-
-
-#based on http://mail.python.org/pipermail/image-sig/2005-September/003559.html
-#inspired by http://play.blog2t.net/fast-blob-detection/
-
-def __flood_fill(image, x, y, value):
-    "Flood fill on a region of non-BORDER_COLOR pixels."
-    BORDER_COLOR = 0
-    
-    if not image.within(x, y) or image.get_pixel(x, y) == BORDER_COLOR:
-        return
-    edge = [(x, y)]
-    image.set_pixel(x, y, value)
-    minx, maxx, miny, maxy = 99999, 0, 99999, 0
-    
-    while edge:
-        newedge = []
-        for (x, y) in edge:
-            for (s, t) in ((x+1, y), (x-1, y), (x, y+1), (x, y-1)):
-                if image.within(s, t) and \
-                	image.get_pixel(s, t) not in (BORDER_COLOR, value):
-                    image.set_pixel(s, t, value)
-                    minx = min(s, minx)
-                    maxx = max(s, maxx)
-                    miny = min(t, miny)
-                    maxy = max(t, maxy)
-                    newedge.append((s, t))
-        edge = newedge
+        #convert Ipl image to PIL image
+        im = opencv.adaptors.Ipl2PIL(bitimage)
+        
+        tinyim = im.convert("1").resize((im.size[0]/2,im.size[1]/2))
+        #draw = ImageDraw.Draw(im)
+        
+        #TODO: a blob detector (OpenCV? make it work with PYTHON)
+        for blob in get_blobs(tinyim, 5):
+          point1 = cvPoint(blob[0]*2, blob[1]*2)
+          point2 = cvPoint(blob[2]*2, blob[3]*2)
+          cvRectangle(frame, point1, point2, cvScalar(0,255,255))
+          
+        return frame
 
