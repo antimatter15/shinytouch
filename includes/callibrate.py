@@ -15,7 +15,7 @@ class Callibrate:
             self.writefile() # Write Config file
 
             # Return to transform mode. Good idea or not?
-            cvSetTrackbarPos("Mode", window_name, 1)
+            cvSetTrackbarPos("Mode", window_name, 2)
             mode=1
         else:
             self.clicks=self.clicks+1

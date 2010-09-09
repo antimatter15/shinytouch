@@ -213,8 +213,28 @@ def get_blobs(im, skip = 0):
 class Tracker:
     def __init__(self):
         pass
-    
+        
+        
     def filter_motion(self, frame, lastframe):
+        global motion_threshold
+        
+        diffImage=cvCreateImage(cvSize(width, height), 8, 3)
+        #gray = cvCreateImage(cvSize(frame.width, frame.height), frame.depth, 1)
+        #cvCvtColor(frame, gray, CV_RGB2GRAY );
+        
+        #bitimage=cvCreateImage(cvSize(frame.width, frame.height), frame.depth, 1)
+        #smoothgray = cvCreateImage(cvSize(frame.width, frame.height), frame.depth, 1)
+        
+        #cvSmooth(gray, smoothgray, CV_BLUR, 6, 6);
+        
+        #cvThreshold(smoothgray, bitimage, motion_threshold, 255, CV_THRESH_BINARY)
+
+        cvAbsDiff(frame,lastframe,diffImage);
+
+        return diffImage
+
+
+    def process_image(self, frame, lastframe):
         global motion_threshold
         
         

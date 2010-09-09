@@ -26,13 +26,13 @@ def change_mode(position):
 
 # Motion threshold slider
 def change_threshold(thresh):
-	global motion_threshold
-	motion_threshold=thresh
+  global motion_threshold
+  motion_threshold=thresh
 
 # Universal function for handling a click
 def handleclick(event, x, y, flags, param):
     global mode
-    if mode==4 and event==CV_EVENT_LBUTTONDOWN: # Callibrate Mode
+    if mode==1 and event==CV_EVENT_LBUTTONDOWN: # Callibrate Mode
         callib.click(x, y)
 
 # Make window & set click handler
@@ -47,7 +47,7 @@ cvSetCaptureProperty(camera, CV_CAP_PROP_FRAME_HEIGHT, height)
 mode=0 # Normal Mode
 
 # Create Mode Slider
-cvCreateTrackbar("Mode", window_name, 0, 4, change_mode);
+cvCreateTrackbar("Mode", window_name, 0, 5, change_mode);
 
 # Create Motion threshold slider
 motion_threshold=135
@@ -58,52 +58,48 @@ running=True
 lastframe=cvCreateImage(cvSize(width, height), 8, 3)
 
 try:
-	# Main Loop.
-	while running:
-		
-		# Get Frame
-		frame = cvQueryFrame(camera)
-		
-		if mode==0: # Normal Mode
-			frame=gfx.draw_mode(frame,"Normal")
-			frame=gfx.drawquad(frame)
-			
-		elif mode==1: # Transform Mode
-			frame = perspective.warp(frame)
-			frame=gfx.draw_mode(frame,"Transform")
-		
-		elif mode==2 or mode==3: # Track/effects Mode
-			# Warp the frame
-			frame=perspective.warp(frame)
-			
-			# Preserve the frame
-			preserved_frame=cvCloneImage(frame)
-			
-			# Filter out the motion
-			frame=tracker.filter_motion(frame, lastframe)
-						
-			# Make a copy
-			lastframe=cvCloneImage(preserved_frame)
-		
-			if mode==2:
-				frame=gfx.draw_mode(frame, "Motion Mode")
-			elif mode==3:
-				#print int(repr(frame.imageData[0])[3:-1], 16)
-				frame=gfx.draw_mode(frame, "Track Mode")
-		
-		elif mode==4: # Callibrate Mode
-			frame=gfx.callibration(frame, callib.clicks)
-			frame=gfx.draw_mode(frame,"Callibrate Mode")
-			frame=gfx.drawquad(frame)
+  # Main Loop.
+  while running:
+    
+    # Get Frame
+    frame = cvQueryFrame(camera)
+    
+    if mode==0: # Normal Mode
+      frame=gfx.draw_mode(frame,"Normal")
+      frame=gfx.drawquad(frame)
+    elif mode == 1:
+      frame=gfx.callibration(frame, callib.clicks)
+      frame=gfx.draw_mode(frame,"Callibrate Mode")
+      frame=gfx.drawquad(frame)
+      
+    else: # Transform Mode
+      frame = perspective.warp(frame)
+      if mode == 2:
+        frame=gfx.draw_mode(frame,"Transform")
+      else:
+        if mode == 3:
+          preserved_frame=cvCloneImage(frame)
+          cvSmooth(preserved_frame, lastframe, CV_BLUR, 6, 6);
+          frame = cvCloneImage(lastframe)
+          frame=gfx.draw_mode(frame, "Capture Background")
+          
+        elif mode == 4:
+          frame = tracker.filter_motion(frame, lastframe)
+          frame=gfx.draw_mode(frame, "Track Mode")
+        elif mode == 5:
+          frame = tracker.process_image(frame, lastframe)
+          frame=gfx.draw_mode(frame, "Motion Mode")
 
-		# Write FPS
-		frame = gfx.fps(frame, speed.go())
-		
-		# Post frame to window
-		cvShowImage(window_name, frame)
-		
-		
-		# Wait for 1ms (to stop freezing)
-		cvWaitKey(2)
+   
+
+    # Write FPS
+    frame = gfx.fps(frame, speed.go())
+    
+    # Post frame to window
+    cvShowImage(window_name, frame)
+    
+    
+    # Wait for 1ms (to stop freezing)
+    cvWaitKey(2)
 except KeyboardInterrupt:
-	running=False
+  running=False
