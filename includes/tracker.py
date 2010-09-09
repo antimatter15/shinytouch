@@ -215,7 +215,7 @@ class Tracker:
         pass
         
         
-    def filter_motion(self, frame, lastframe):
+    def filter_difference(self, frame, lastframe):
         global motion_threshold
         
         diffImage=cvCreateImage(cvSize(width, height), 8, 3)
@@ -233,6 +233,20 @@ class Tracker:
 
         return diffImage
 
+        
+    def filter_threshold(self, frame, lastframe):
+        global motion_threshold
+        
+        diffImage=cvCreateImage(cvSize(width, height), 8, 3)
+        cvAbsDiff(frame,lastframe,diffImage);
+        
+        gray = cvCreateImage(cvSize(frame.width, frame.height), frame.depth, 1)
+        cvCvtColor(diffImage, gray, CV_RGB2GRAY );
+        
+        bitimage=cvCreateImage(cvSize(frame.width, frame.height), frame.depth, 1)
+        cvThreshold(gray, bitimage, motion_threshold, 255, CV_THRESH_BINARY)
+
+        return bitimage
 
     def process_image(self, frame, lastframe):
         global motion_threshold

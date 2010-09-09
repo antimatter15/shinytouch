@@ -50,7 +50,7 @@ mode=0 # Normal Mode
 cvCreateTrackbar("Mode", window_name, 0, 5, change_mode);
 
 # Create Motion threshold slider
-motion_threshold=135
+motion_threshold=20
 cvCreateTrackbar("Threshold", window_name, motion_threshold, 255, change_threshold);
 
 running=True
@@ -84,11 +84,11 @@ try:
           frame=gfx.draw_mode(frame, "Capture Background")
           
         elif mode == 4:
-          frame = tracker.filter_motion(frame, lastframe)
-          frame=gfx.draw_mode(frame, "Track Mode")
+          frame = tracker.filter_difference(frame, lastframe)
+          frame=gfx.draw_mode(frame, "Subtract")
         elif mode == 5:
-          frame = tracker.process_image(frame, lastframe)
-          frame=gfx.draw_mode(frame, "Motion Mode")
+          frame = tracker.filter_threshold(frame, lastframe)
+          frame=gfx.draw_mode(frame, "Threshold")
 
    
 

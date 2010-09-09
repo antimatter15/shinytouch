@@ -34,7 +34,7 @@ def get_blobs(im, skip = 0):
   return blobs
 
 
-newim = Image.open('Selection_011.png')
+newim = Image.open('Selection-7.png')
 im = newim.convert("1")
 draw = ImageDraw.Draw(newim)
 import time
